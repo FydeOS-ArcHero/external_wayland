@@ -2465,6 +2465,9 @@
 	willing to retrieve the output size in the global compositor
 	space should use xdg_output.logical_size instead.
 
+	The vertical refresh rate can be set to zero if it doesn't make
+	sense for this output (e.g. for virtual outputs).
+
 	Clients should not use the refresh rate to schedule frames. Instead,
 	they should use the wl_surface.frame event or the presentation-time
 	protocol.

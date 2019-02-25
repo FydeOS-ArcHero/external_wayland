@@ -65,6 +65,12 @@ AC_SUBST(GCC_CFLAGS)
 AC_CHECK_HEADERS([sys/prctl.h])
 AC_CHECK_FUNCS([accept4 mkostemp posix_fallocate prctl])
 
+# *BSD don't have libdl, but they have its functions in libc
+WESTON_SEARCH_LIBS([DL], [dl], [dlsym])
+
+# OpenBSD doesn't have librt, but it has its functions in libc
+WESTON_SEARCH_LIBS([RT], [rt], [clock_gettime])
+
 AC_ARG_ENABLE([libraries],
 	      [AC_HELP_STRING([--disable-libraries],
 			      [Disable compilation of wayland libraries])],

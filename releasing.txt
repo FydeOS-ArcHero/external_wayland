@@ -15,7 +15,7 @@ To make a release of Wayland, follow these steps.
       $ git commit configure.ac -m "configure.ac: bump to version $RELEASE_NUMBER for the $RELEASE_NAME release"
       $ git push
 
-  4.  Run the release.sh script to generate the tarballs, sign and
+  2.  Run the release.sh script to generate the tarballs, sign and
       upload them, and generate a release announcement template.
       This script can be obtained from X.org's modular package:
 
@@ -34,16 +34,16 @@ To make a release of Wayland, follow these steps.
 
       $ ./publish-doc
 
-  5.  Compose the release announcements.  The script will generate
+  3.  Compose the release announcements.  The script will generate
       *.x.y.z.announce files with a list of changes and tags.  Prepend
       it with a human-readable listing of the most notable changes.
       For x.y.0 releases, indicate the schedule for the x.y+1.0
       release.
 
-  6.  PGP sign the release announcements and send them to
+  4.  PGP sign the release announcements and send them to
       wayland-devel@lists.freedesktop.org
 
-  7.  Update releases.html in wayland-web with links to tarballs and
+  5.  Update releases.html in wayland-web with links to tarballs and
       the release email URL.
 
       The wl_register_release script in wayland-web will generate an HTML

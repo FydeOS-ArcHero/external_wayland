@@ -251,6 +251,11 @@ struct parse_context {
 	unsigned int character_data_length;
 };
 
+enum identifier_role {
+	STANDALONE_IDENT,
+	TRAILING_IDENT
+};
+
 static void *
 fail_on_null(void *p)
 {
@@ -627,6 +632,50 @@ strtouint(const char *str)
 	return (int)ret;
 }
 
+/* Check that the provided string will produce valid "C" identifiers.
+ *
+ * If the string will form the prefix of an identifier in the
+ * generated C code, then it must match [_a-zA-Z][_0-9a-zA-Z]*.
+ *
+ * If the string will form the suffix of an identifier, then
+ * it must match [_0-9a-zA-Z]+.
+ *
+ * Unicode characters or escape sequences are not permitted,
+ * since not all C compilers support them.
+ *
+ * If the above conditions are not met, then fail()
+ */
+static void
+validate_identifier(struct location *loc,
+		const char *str,
+		enum identifier_role role)
+{
+	const char *scan;
+
+	if (!*str) {
+		fail(loc, "element name is empty");
+	}
+
+	for (scan = str; *scan; scan++) {
+		char c = *scan;
+
+		/* we do not use the locale-dependent `isalpha` */
+		bool is_alpha = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+		bool is_digit = c >= '0' && c <= '9';
+		bool leading_char = (scan == str) && role == STANDALONE_IDENT;
+
+		if (is_alpha || c == '_' || (!leading_char && is_digit))
+			continue;
+
+		if (role == TRAILING_IDENT)
+			fail(loc,
+			     "'%s' is not a valid trailing identifier part", str);
+		else
+			fail(loc,
+			     "'%s' is not a valid standalone identifier", str);
+	}
+}
+
 static int
 version_from_since(struct parse_context *ctx, const char *since)
 {
@@ -701,6 +750,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (name == NULL)
 			fail(&ctx->loc, "no protocol name given");
 
+		validate_identifier(&ctx->loc, name, STANDALONE_IDENT);
 		ctx->protocol->name = xstrdup(name);
 		ctx->protocol->uppercase_name = uppercase_dup(name);
 	} else if (strcmp(element_name, "copyright") == 0) {
@@ -712,6 +762,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (version == 0)
 			fail(&ctx->loc, "no interface version given");
 
+		validate_identifier(&ctx->loc, name, STANDALONE_IDENT);
 		interface = create_interface(ctx->loc, name, version);
 		ctx->interface = interface;
 		wl_list_insert(ctx->protocol->interface_list.prev,
@@ -721,6 +772,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (name == NULL)
 			fail(&ctx->loc, "no request name given");
 
+		validate_identifier(&ctx->loc, name, STANDALONE_IDENT);
 		message = create_message(ctx->loc, name);
 
 		if (strcmp(element_name, "request") == 0)
@@ -748,6 +800,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (name == NULL)
 			fail(&ctx->loc, "no argument name given");
 
+		validate_identifier(&ctx->loc, name, STANDALONE_IDENT);
 		arg = create_arg(name);
 		if (!set_arg_type(arg, type))
 			fail(&ctx->loc, "unknown type (%s)", type);
@@ -757,8 +810,12 @@ start_element(void *data, const char *element_name, const char **atts)
 			ctx->message->new_id_count++;
 			/* fallthrough */
 		case OBJECT:
-			if (interface_name)
+			if (interface_name) {
+				validate_identifier(&ctx->loc,
+						    interface_name,
+						    STANDALONE_IDENT);
 				arg->interface_name = xstrdup(interface_name);
+			}
 			break;
 		default:
 			if (interface_name != NULL)
@@ -793,6 +850,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (name == NULL)
 			fail(&ctx->loc, "no enum name given");
 
+		validate_identifier(&ctx->loc, name, TRAILING_IDENT);
 		enumeration = create_enumeration(name);
 
 		if (bitfield == NULL || strcmp(bitfield, "false") == 0)
@@ -812,6 +870,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		if (name == NULL)
 			fail(&ctx->loc, "no entry name given");
 
+		validate_identifier(&ctx->loc, name, TRAILING_IDENT);
 		entry = create_entry(name, value);
 		version = version_from_since(ctx, since);
 

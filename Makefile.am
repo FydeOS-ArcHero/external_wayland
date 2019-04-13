@@ -291,6 +291,13 @@ exec_fd_leak_checker_LDADD = libtest-helpers.la
 
 EXTRA_DIST += tests/scanner-test.sh			\
 	protocol/tests.xml				\
+	tests/data/bad-identifier-arg.xml		\
+	tests/data/bad-identifier-entry.xml		\
+	tests/data/bad-identifier-enum.xml		\
+	tests/data/bad-identifier-event.xml		\
+	tests/data/bad-identifier-interface.xml		\
+	tests/data/bad-identifier-protocol.xml		\
+	tests/data/bad-identifier-request.xml		\
 	tests/data/example.xml				\
 	tests/data/example-client.h			\
 	tests/data/example-server.h			\

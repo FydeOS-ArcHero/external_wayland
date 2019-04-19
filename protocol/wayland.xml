@@ -509,6 +509,9 @@
 	this request after a NULL mime type has been set in
 	wl_data_offer.accept or no action was received through
 	wl_data_offer.action.
+
+	If wl_data_offer.finish request is received for a non drag and drop
+	operation, the invalid_finish protocol error is raised.
       </description>
     </request>
 

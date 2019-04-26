@@ -231,7 +231,7 @@ wl_event_source_timer_dispatch(struct wl_event_source *source,
 	len = read(source->fd, &expires, sizeof expires);
 	if (!(len == -1 && errno == EAGAIN) && len != sizeof expires)
 		/* Is there anything we can do here?  Will this ever happen? */
-		wl_log("timerfd read error: %m\n");
+		wl_log("timerfd read error: %s\n", strerror(errno));
 
 	return timer_source->func(timer_source->base.data);
 }
@@ -325,7 +325,7 @@ wl_event_source_signal_dispatch(struct wl_event_source *source,
 	len = read(source->fd, &signal_info, sizeof signal_info);
 	if (!(len == -1 && errno == EAGAIN) && len != sizeof signal_info)
 		/* Is there anything we can do here?  Will this ever happen? */
-		wl_log("signalfd read error: %m\n");
+		wl_log("signalfd read error: %s\n", strerror(errno));
 
 	return signal_source->func(signal_source->signal_number,
 				   signal_source->base.data);

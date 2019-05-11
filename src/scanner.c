@@ -1722,7 +1722,7 @@ emit_types(struct protocol *protocol, struct wl_list *message_list)
 }
 
 static void
-emit_messages(struct wl_list *message_list,
+emit_messages(const char *name, struct wl_list *message_list,
 	      struct interface *interface, const char *suffix)
 {
 	struct message *m;
@@ -1775,7 +1775,7 @@ emit_messages(struct wl_list *message_list,
 				break;
 			}
 		}
-		printf("\", types + %d },\n", m->type_index);
+		printf("\", %s_types + %d },\n", name, m->type_index);
 	}
 
 	printf("};\n\n");
@@ -1832,7 +1832,7 @@ emit_code(struct protocol *protocol, enum visibility vis)
 	wl_array_release(&types);
 	printf("\n");
 
-	printf("static const struct wl_interface *types[] = {\n");
+	printf("static const struct wl_interface *%s_types[] = {\n", protocol->name);
 	emit_null_run(protocol);
 	wl_list_for_each(i, &protocol->interface_list, link) {
 		emit_types(protocol, &i->request_list);
@@ -1842,8 +1842,8 @@ emit_code(struct protocol *protocol, enum visibility vis)
 
 	wl_list_for_each_safe(i, next, &protocol->interface_list, link) {
 
-		emit_messages(&i->request_list, i, "requests");
-		emit_messages(&i->event_list, i, "events");
+		emit_messages(protocol->name, &i->request_list, i, "requests");
+		emit_messages(protocol->name, &i->event_list, i, "events");
 
 		printf("%s const struct wl_interface "
 		       "%s_interface = {\n"

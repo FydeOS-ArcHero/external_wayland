@@ -1368,6 +1368,12 @@
 	will not receive a release event, and is not used by the
 	compositor.
 
+	If a pending wl_buffer has been committed to more than one wl_surface,
+	the delivery of wl_buffer.release events becomes undefined. A well
+	behaved client should not rely on wl_buffer.release events in this
+	case. Alternatively, a client could create multiple wl_buffer objects
+	from the same backing storage or use wp_linux_buffer_release.
+
 	Destroying the wl_buffer after wl_buffer.release does not change
 	the surface contents. However, if the client destroys the
 	wl_buffer before receiving the wl_buffer.release event, the surface

@@ -233,6 +233,7 @@ array_test_SOURCES = tests/array-test.c
 array_test_LDADD = libtest-runner.la
 client_test_SOURCES = tests/client-test.c
 client_test_LDADD = libtest-runner.la
+display_test_CFLAGS = -pthread
 display_test_SOURCES = tests/display-test.c
 display_test_LDADD = libtest-runner.la
 nodist_display_test_SOURCES =				\

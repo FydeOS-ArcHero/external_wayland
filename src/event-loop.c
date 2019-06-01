@@ -595,8 +595,8 @@ wl_event_loop_dispatch_idle(struct wl_event_loop *loop)
 	struct wl_event_source_idle *source;
 
 	while (!wl_list_empty(&loop->idle_list)) {
-		source = container_of(loop->idle_list.next,
-				      struct wl_event_source_idle, base.link);
+		source = wl_container_of(loop->idle_list.next,
+					 source, base.link);
 		source->func(source->base.data);
 		wl_event_source_remove(&source->base);
 	}

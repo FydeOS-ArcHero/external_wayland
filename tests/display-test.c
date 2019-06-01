@@ -60,7 +60,7 @@ display_destroy_notify(struct wl_listener *l, void *data)
 {
 	struct display_destroy_listener *listener;
 
-	listener = container_of(l, struct display_destroy_listener, listener);
+	listener = wl_container_of(l, listener, listener);
 	listener->done = 1;
 }
 

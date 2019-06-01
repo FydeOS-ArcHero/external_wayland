@@ -298,8 +298,8 @@ wl_event_queue_release(struct wl_event_queue *queue)
 	struct wl_closure *closure;
 
 	while (!wl_list_empty(&queue->event_list)) {
-		closure = container_of(queue->event_list.next,
-				       struct wl_closure, link);
+		closure = wl_container_of(queue->event_list.next,
+					  closure, link);
 		wl_list_remove(&closure->link);
 		destroy_queued_closure(closure);
 	}
@@ -1400,8 +1400,7 @@ dispatch_event(struct wl_display *display, struct wl_event_queue *queue)
 	int opcode;
 	bool proxy_destroyed;
 
-	closure = container_of(queue->event_list.next,
-			       struct wl_closure, link);
+	closure = wl_container_of(queue->event_list.next, closure, link);
 	wl_list_remove(&closure->link);
 	opcode = closure->opcode;
 

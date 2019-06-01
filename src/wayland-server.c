@@ -1899,7 +1899,9 @@ wl_client_get_link(struct wl_client *client)
 WL_EXPORT struct wl_client *
 wl_client_from_link(struct wl_list *link)
 {
-	return container_of(link, struct wl_client, link);
+	struct wl_client *client;
+
+	return wl_container_of(link, client, link);
 }
 
 /** Add a listener for the client's resource creation signal

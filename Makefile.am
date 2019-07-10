@@ -174,6 +174,7 @@ built_test_programs =				\
 	sanity-test				\
 	socket-test				\
 	queue-test				\
+	proxy-test				\
 	signal-test				\
 	newsignal-test				\
 	resources-test				\
@@ -258,6 +259,8 @@ socket_test_SOURCES = tests/socket-test.c
 socket_test_LDADD = libtest-runner.la
 queue_test_SOURCES = tests/queue-test.c
 queue_test_LDADD = libtest-runner.la
+proxy_test_SOURCES = tests/proxy-test.c
+proxy_test_LDADD = libtest-runner.la
 signal_test_SOURCES = tests/signal-test.c
 signal_test_LDADD = libtest-runner.la
 # wayland-server.c is needed here to access wl_priv_* functions

@@ -69,6 +69,7 @@ struct wl_proxy {
 	void *user_data;
 	wl_dispatcher_func_t dispatcher;
 	uint32_t version;
+	const char * const *tag;
 };
 
 struct wl_event_queue {
@@ -2057,6 +2058,70 @@ WL_EXPORT uint32_t
 wl_proxy_get_id(struct wl_proxy *proxy)
 {
 	return proxy->object.id;
+}
+
+/** Set the tag of a proxy object
+ *
+ * A toolkit or application can set a unique tag on a proxy in order to
+ * identify whether an object is managed by itself or some external part.
+ *
+ * To create a tag, the recommended way is to define a statically allocated
+ * constant char array containing some descriptive string. The tag will be the
+ * pointer to the non-const pointer to the beginning of the array.
+ *
+ * For example, to define and set a tag on a surface managed by a certain
+ * subsystem:
+ *
+ * 	static const char *my_tag = "my tag";
+ *
+ * 	wl_proxy_set_tag((struct wl_proxy *) surface, &my_tag);
+ *
+ * Then, in a callback with wl_surface as an argument, in order to check
+ * whether it's a surface managed by the same subsystem.
+ *
+ * 	const char * const *tag;
+ *
+ * 	tag = wl_proxy_get_tag((struct wl_proxy *) surface);
+ * 	if (tag != &my_tag)
+ *		return;
+ *
+ *	...
+ *
+ * For debugging purposes, a tag should be suitable to be included in a debug
+ * log entry, e.g.
+ *
+ * 	const char * const *tag;
+ *
+ * 	tag = wl_proxy_get_tag((struct wl_proxy *) surface);
+ * 	printf("Got a surface with the tag %p (%s)\n",
+ * 	       tag, (tag && *tag) ? *tag : "");
+ *
+ * \param proxy The proxy object
+ * \param tag The tag
+ *
+ * \memberof wl_proxy
+ * \since 1.17.90
+ */
+WL_EXPORT void
+wl_proxy_set_tag(struct wl_proxy *proxy,
+		 const char * const *tag)
+{
+	proxy->tag = tag;
+}
+
+/** Get the tag of a proxy object
+ *
+ * See wl_proxy_set_tag for details.
+ *
+ * \param proxy The proxy object
+ *
+ * \memberof wl_proxy
+ * \since 1.17.90
+ */
+WL_EXPORT const char * const *
+wl_proxy_get_tag(struct wl_proxy *proxy)
+{
+	return proxy->tag;
 }
 
 /** Get the interface name (class) of a proxy object

@@ -91,7 +91,7 @@
       <entry name="invalid_object" value="0"
 	     summary="server couldn't find object"/>
       <entry name="invalid_method" value="1"
-	     summary="method doesn't exist on the specified interface"/>
+	     summary="method doesn't exist on the specified interface or malformed request"/>
       <entry name="no_memory" value="2"
 	     summary="server is out of memory"/>
       <entry name="implementation" value="3"

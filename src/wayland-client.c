@@ -745,14 +745,19 @@ wl_proxy_marshal_array_constructor_versioned(struct wl_proxy *proxy,
 	}
 
 	closure = wl_closure_marshal(&proxy->object, opcode, args, message);
-	if (closure == NULL)
-		wl_abort("Error marshalling request: %s\n", strerror(errno));
+	if (closure == NULL) {
+		wl_log("Error marshalling request: %s\n", strerror(errno));
+		display_fatal_error(proxy->display, errno);
+		goto err_unlock;
+	}
 
 	if (debug_client)
 		wl_closure_print(closure, &proxy->object, true);
 
-	if (wl_closure_send(closure, proxy->display->connection))
-		wl_abort("Error sending request: %s\n", strerror(errno));
+	if (wl_closure_send(closure, proxy->display->connection)) {
+		wl_log("Error sending request: %s\n", strerror(errno));
+		display_fatal_error(proxy->display, errno);
+	}
 
 	wl_closure_destroy(closure);
 

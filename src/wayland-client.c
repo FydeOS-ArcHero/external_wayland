@@ -740,6 +740,10 @@ wl_proxy_marshal_array_constructor_versioned(struct wl_proxy *proxy,
 			goto err_unlock;
 	}
 
+	if (proxy->display->last_error) {
+		goto err_unlock;
+	}
+
 	closure = wl_closure_marshal(&proxy->object, opcode, args, message);
 	if (closure == NULL)
 		wl_abort("Error marshalling request: %s\n", strerror(errno));

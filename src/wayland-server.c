@@ -25,6 +25,7 @@
 
 #define _GNU_SOURCE
 
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
@@ -112,6 +113,7 @@ struct wl_global {
 	void *data;
 	wl_global_bind_func_t bind;
 	struct wl_list link;
+	bool removed;
 };
 
 struct wl_resource {
@@ -992,7 +994,7 @@ display_get_registry(struct wl_client *client,
 		       &registry_resource->link);
 
 	wl_list_for_each(global, &display->global_list, link)
-		if (wl_global_is_visible(client, global))
+		if (wl_global_is_visible(client, global) && !global->removed)
 			wl_resource_post_event(registry_resource,
 					       WL_REGISTRY_GLOBAL,
 					       global->name,
@@ -1208,6 +1210,7 @@ wl_global_create(struct wl_display *display,
 	global->version = version;
 	global->data = data;
 	global->bind = bind;
+	global->removed = false;
 	wl_list_insert(display->global_list.prev, &global->link);
 
 	wl_list_for_each(resource, &display->registry_resource_list, link)
@@ -1220,15 +1223,50 @@ wl_global_create(struct wl_display *display,
 	return global;
 }
 
+/** Remove the global
+ *
+ * \param global The Wayland global.
+ *
+ * Broadcast a global remove event to all clients without destroying the
+ * global. This function can only be called once per global.
+ *
+ * wl_global_destroy() removes the global and immediately destroys it. On
+ * the other end, this function only removes the global, allowing clients
+ * that have not yet received the global remove event to continue to bind to
+ * it.
+ *
+ * This can be used by compositors to mitigate clients being disconnected
+ * because a global has been added and removed too quickly. Compositors can call
+ * wl_global_remove(), then wait an implementation-defined amount of time, then
+ * call wl_global_destroy(). Note that the destruction of a global is still
+ * racy, since clients have no way to acknowledge that they received the remove
+ * event.
+ *
+ * \since 1.17.90
+ */
 WL_EXPORT void
-wl_global_destroy(struct wl_global *global)
+wl_global_remove(struct wl_global *global)
 {
 	struct wl_display *display = global->display;
 	struct wl_resource *resource;
 
+	if (global->removed)
+		wl_abort("wl_global_remove: called twice on the same "
+			 "global '%s@%"PRIu32"'", global->interface->name,
+			 global->name);
+
 	wl_list_for_each(resource, &display->registry_resource_list, link)
 		wl_resource_post_event(resource, WL_REGISTRY_GLOBAL_REMOVE,
 				       global->name);
+
+	global->removed = true;
+}
+
+WL_EXPORT void
+wl_global_destroy(struct wl_global *global)
+{
+	if (!global->removed)
+		wl_global_remove(global);
 	wl_list_remove(&global->link);
 	free(global);
 }

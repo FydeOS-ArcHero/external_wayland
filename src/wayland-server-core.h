@@ -247,6 +247,9 @@ wl_global_create(struct wl_display *display,
 		 void *data, wl_global_bind_func_t bind);
 
 void
+wl_global_remove(struct wl_global *global);
+
+void
 wl_global_destroy(struct wl_global *global);
 
 /** A filter function for wl_global objects

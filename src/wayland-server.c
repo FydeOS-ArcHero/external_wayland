@@ -1245,6 +1245,19 @@ wl_global_get_user_data(const struct wl_global *global)
 	return global->data;
 }
 
+/** Set the global's user data
+ *
+ * \param global The global object
+ * \param data The user data pointer
+ *
+ * \since 1.17.90
+ */
+WL_EXPORT void
+wl_global_set_user_data(struct wl_global *global, void *data)
+{
+	global->data = data;
+}
+
 /** Get the current serial number
  *
  * \param display The display object

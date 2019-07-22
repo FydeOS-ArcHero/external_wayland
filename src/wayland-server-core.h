@@ -279,6 +279,9 @@ wl_global_get_interface(const struct wl_global *global);
 void *
 wl_global_get_user_data(const struct wl_global *global);
 
+void
+wl_global_set_user_data(struct wl_global *global, void *data);
+
 struct wl_client *
 wl_client_create(struct wl_display *display, int fd);
 

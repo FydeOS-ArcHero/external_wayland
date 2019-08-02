@@ -1279,8 +1279,10 @@
 
   <interface name="wl_surface" version="4">
     <description summary="an onscreen surface">
-      A surface is a rectangular area that is displayed on the screen.
-      It has a location, size and pixel contents.
+      A surface is a rectangular area that may be displayed on zero
+      or more outputs, and shown any number of times at the compositor's
+      discretion. They can present wl_buffers, receive user input, and
+      define a local coordinate system.
 
       The size of a surface (and relative positions on it) is described
       in surface-local coordinates, which may differ from the buffer

@@ -1422,3 +1422,68 @@ TEST(registry_bind_interface_mismatch)
 
 	display_destroy(d);
 }
+
+static void
+send_overflow_client(void *data)
+{
+	struct client *c = client_connect();
+	int i, err = 0;
+	int *pipes = data;
+	char tmp = '\0';
+
+	/* On Linux, the Unix socket default buffer size is <=256KB, and
+	 * each noop request requires 8 bytes; the buffer should thus
+	 * overflow within about 32K /unhandled/ iterations */
+	for (i = 0; i < 1000000; i++) {
+		noop_request(c);
+		err = wl_display_get_error(c->wl_display);
+		if (err)
+			break;
+	}
+
+	/* Do not close the pipe file descriptors afterwards, because the leak
+	 * check verifies that the initial/final FD counts are the same */
+	assert(write(pipes[1], &tmp, sizeof(tmp)) == (ssize_t)sizeof(tmp));
+
+	/* Expect an error */
+	fprintf(stderr, "Send loop failed on try %d, err = %d, %s\n", i, err, strerror(err));
+	assert(err == EAGAIN);
+
+	client_disconnect_nocheck(c);
+}
+
+TEST(send_overflow_disconnection)
+{
+	struct display *d;
+	struct client_info *c;
+	char tmp;
+	int rpipe[2];
+	int i;
+
+	assert(pipe(rpipe) != -1);
+
+	d = display_create();
+
+	c = client_create(d, send_overflow_client, &rpipe);
+
+	/* Close write end of the pipe, so that the later read() call gets
+	 * interrupted if the client dies */
+	close(rpipe[1]);
+
+	/* At least 2 loops of this are needed to respond for the client to
+	 * set up the test interface */
+	for (i = 0; i < 5; i++) {
+		wl_display_flush_clients(d->wl_display);
+		wl_event_loop_dispatch(wl_display_get_event_loop(d->wl_display), -1);
+	}
+
+	/* Wait until all noop requests have been sent, or until client
+	 * process aborts */
+	(void)read(rpipe[0], &tmp, sizeof(tmp));
+	close(rpipe[0]);
+
+	/* For a clean shutdown */
+	display_run(d);
+
+	display_destroy(d);
+}

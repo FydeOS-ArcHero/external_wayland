@@ -70,6 +70,7 @@ struct client {
 struct client *client_connect(void);
 void client_disconnect(struct client *);
 int stop_display(struct client *, int);
+void noop_request(struct client *);
 
 /**
  * Usual workflow:

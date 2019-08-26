@@ -1393,7 +1393,7 @@ wl_socket_lock(struct wl_socket *socket)
 		goto err_fd;
 	}
 
-	if (stat(socket->addr.sun_path, &socket_stat) < 0 ) {
+	if (lstat(socket->addr.sun_path, &socket_stat) < 0 ) {
 		if (errno != ENOENT) {
 			wl_log("did not manage to stat file %s\n",
 				socket->addr.sun_path);

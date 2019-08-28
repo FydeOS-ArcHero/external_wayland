@@ -917,6 +917,12 @@ registry_bind(struct wl_client *client,
 		wl_resource_post_error(resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "invalid global %s (%d)", interface, name);
+	else if (strcmp(global->interface->name, interface) != 0)
+		wl_resource_post_error(resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "invalid interface for global %u: "
+				       "have %s, wanted %s",
+				       name, interface, global->interface->name);
 	else if (version == 0)
 		wl_resource_post_error(resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,

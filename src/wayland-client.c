@@ -1364,6 +1364,12 @@ queue_event(struct wl_display *display, int len)
 		return size;
 	}
 
+	if (opcode >= proxy->object.interface->event_count) {
+		wl_log("interface '%s' has no event %u\n",
+		       proxy->object.interface->name, opcode);
+		return -1;
+	}
+
 	message = &proxy->object.interface->events[opcode];
 	closure = wl_connection_demarshal(display->connection, size,
 					  &display->objects, message);

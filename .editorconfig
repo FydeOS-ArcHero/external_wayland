@@ -13,3 +13,7 @@ max_line_length = 80
 indent_style = space
 indent_size = 2
 tab_width = 8
+
+[*.py]
+indent_style = space
+indent_size = 4

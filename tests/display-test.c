@@ -1355,3 +1355,70 @@ TEST(zombie_fd_errant_consumption)
 
 	display_destroy(d);
 }
+
+
+static void
+registry_bind_interface_mismatch_handle_global(void *data,
+					       struct wl_registry *registry,
+					       uint32_t id, const char *intf,
+					       uint32_t ver)
+{
+	uint32_t *seat_id_ptr = data;
+
+	if (strcmp(intf, wl_seat_interface.name) == 0) {
+		*seat_id_ptr = id;
+	}
+}
+
+static const struct wl_registry_listener bind_interface_mismatch_registry_listener = {
+	registry_bind_interface_mismatch_handle_global,
+	NULL
+};
+
+static void
+registry_bind_interface_mismatch_client(void *data)
+{
+	struct client *c = client_connect();
+	struct wl_registry *registry;
+	uint32_t seat_id = 0;
+	void *ptr;
+	int ret;
+
+	registry = wl_display_get_registry(c->wl_display);
+	wl_registry_add_listener(registry,
+				 &bind_interface_mismatch_registry_listener,
+				 &seat_id);
+
+	ret = wl_display_roundtrip(c->wl_display);
+	assert(ret >= 0);
+	assert(seat_id != 0);
+
+	/* Bind with a different interface */
+	ptr = wl_registry_bind(registry, seat_id, &wl_output_interface, 1);
+	ret = wl_display_roundtrip(c->wl_display);
+	assert(ret < 0);
+	check_bind_error(c);
+
+	wl_proxy_destroy((struct wl_proxy *) ptr);
+	wl_registry_destroy(registry);
+
+	client_disconnect_nocheck(c);
+}
+
+TEST(registry_bind_interface_mismatch)
+{
+	struct display *d;
+	struct wl_global *seat_global;
+
+	d = display_create();
+
+	seat_global = wl_global_create(d->wl_display, &wl_seat_interface,
+				       1, NULL, NULL);
+
+	client_create_noarg(d, registry_bind_interface_mismatch_client);
+	display_run(d);
+
+	wl_global_destroy(seat_global);
+
+	display_destroy(d);
+}

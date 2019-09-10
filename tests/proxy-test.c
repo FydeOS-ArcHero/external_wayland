@@ -129,6 +129,7 @@ TEST(proxy_tag)
 
 	assert(client.callback_count == 2);
 
+	wl_protocol_logger_destroy(logger);
 	wl_display_disconnect(client.display);
 	wl_event_loop_dispatch(server.loop, 100);
 

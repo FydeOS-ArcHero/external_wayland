@@ -1487,3 +1487,137 @@ TEST(send_overflow_disconnection)
 
 	display_destroy(d);
 }
+
+static void
+registry_global_remove_before_handle_global(void *data,
+					    struct wl_registry *registry,
+					    uint32_t id, const char *intf,
+					    uint32_t ver)
+{
+	uint32_t *id_ptr = data;
+
+	if (strcmp(intf, wl_seat_interface.name) == 0) {
+		assert(*id_ptr == 0);
+		*id_ptr = id;
+	}
+}
+
+static void
+registry_global_remove_before_handle_global_remove(void *data,
+						   struct wl_registry *registry,
+						   uint32_t id)
+{
+	uint32_t *id_ptr = data;
+
+	if (*id_ptr == id) {
+		*id_ptr = 0;
+	}
+}
+
+/* This listener expects a uint32_t user data pointer, sets it to the wl_seat
+ * global ID when receiving a "global" event, and sets it to zero when receiving
+ * a "global_remove" event. */
+static const struct wl_registry_listener global_remove_before_registry_listener = {
+	registry_global_remove_before_handle_global,
+	registry_global_remove_before_handle_global_remove,
+};
+
+static void
+global_remove_before_client(void *data)
+{
+	struct client *c = client_connect();
+	struct wl_registry *registry;
+	uint32_t global_id = 0, saved_global_id;
+	struct wl_seat *seat;
+	int ret;
+
+	registry = wl_display_get_registry(c->wl_display);
+	wl_registry_add_listener(registry,
+				 &global_remove_before_registry_listener,
+				 &global_id);
+
+	ret = wl_display_roundtrip(c->wl_display);
+	assert(ret >= 0);
+	assert(global_id != 0);
+	saved_global_id = global_id;
+
+	/* Wait for the compositor to remove the global */
+	assert(stop_display(c, 1) >= 0);
+
+	/* Check binding still works after the global has been removed. Also
+	 * check we get the global_remove event. */
+	seat = wl_registry_bind(registry, saved_global_id, &wl_seat_interface, 1);
+	ret = wl_display_roundtrip(c->wl_display);
+	assert(ret >= 0);
+	assert(global_id == 0);
+
+	wl_seat_destroy(seat);
+	wl_registry_destroy(registry);
+
+	client_disconnect(c);
+}
+
+static void
+registry_global_remove_after_handle_global(void *data,
+					   struct wl_registry *registry,
+					   uint32_t id, const char *intf,
+					   uint32_t ver)
+{
+	/* Make sure the global isn't advertised anymore after being removed */
+	assert(strcmp(intf, wl_seat_interface.name) != 0);
+}
+
+static const struct wl_registry_listener global_remove_after_registry_listener = {
+	registry_global_remove_after_handle_global,
+	NULL,
+};
+
+static void
+global_remove_after_client(void *data)
+{
+	struct client *c = client_connect();
+	struct wl_registry *registry;
+	uint32_t global_id = 0;
+	struct wl_seat *seat;
+	int ret;
+
+	registry = wl_display_get_registry(c->wl_display);
+	wl_registry_add_listener(registry,
+				 &global_remove_after_registry_listener,
+				 &global_id);
+
+	ret = wl_display_roundtrip(c->wl_display);
+	assert(ret >= 0);
+
+	wl_registry_destroy(registry);
+
+	client_disconnect(c);
+}
+
+TEST(global_remove)
+{
+	struct display *d;
+	struct wl_global *global;
+	int i;
+
+	d = display_create();
+
+	global = wl_global_create(d->wl_display, &wl_seat_interface,
+				  1, d, bind_seat);
+
+	/* Create a client before removing the global */
+	client_create_noarg(d, global_remove_before_client);
+
+	display_run(d);
+
+	wl_global_remove(global);
+
+	/* Create another client after removing the global */
+	client_create_noarg(d, global_remove_after_client);
+
+	display_resume(d);
+
+	wl_global_destroy(global);
+
+	display_destroy(d);
+}

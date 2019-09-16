@@ -286,6 +286,7 @@ cpp_compile_test_SOURCES = tests/cpp-compile-test.cpp
 endif
 
 fixed_benchmark_SOURCES = tests/fixed-benchmark.c
+fixed_benchmark_LDADD = $(RT_LIBS)
 
 os_wrappers_test_SOURCES = tests/os-wrappers-test.c
 os_wrappers_test_LDADD = libtest-runner.la

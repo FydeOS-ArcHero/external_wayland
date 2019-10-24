@@ -1435,7 +1435,7 @@ wl_socket_lock(struct wl_socket *socket)
 	snprintf(socket->lock_addr, sizeof socket->lock_addr,
 		 "%s%s", socket->addr.sun_path, LOCK_SUFFIX);
 
-	socket->fd_lock = open(socket->lock_addr, O_CREAT | O_CLOEXEC,
+	socket->fd_lock = open(socket->lock_addr, O_CREAT | O_CLOEXEC | O_RDWR,
 			       (S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP));
 
 	if (socket->fd_lock < 0) {

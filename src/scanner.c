@@ -975,6 +975,17 @@ verify_arguments(struct parse_context *ctx,
 
 }
 
+#ifndef HAVE_STRNDUP
+char *
+strndup(const char *s, size_t size)
+{
+	char *r = malloc(size + 1);
+	strncpy(r, s, size);
+	r[size] = '\0';
+	return r;
+}
+#endif
+
 static void
 end_element(void *data, const XML_Char *name)
 {

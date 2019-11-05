@@ -56,7 +56,8 @@ libwayland_private_la_SOURCES =			\
 	src/connection.c			\
 	src/wayland-os.c			\
 	src/wayland-os.h			\
-	src/wayland-private.h
+	src/wayland-private.h			\
+	src/wayland-server-private.h
 
 include_HEADERS =				\
 	src/wayland-util.h			\

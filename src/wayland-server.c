@@ -46,6 +46,7 @@
 
 #include "wayland-util.h"
 #include "wayland-private.h"
+#include "wayland-server-private.h"
 #include "wayland-server.h"
 #include "wayland-os.h"
 

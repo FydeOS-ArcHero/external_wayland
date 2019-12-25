@@ -1431,6 +1431,9 @@ send_overflow_client(void *data)
 	int *pipes = data;
 	char tmp = '\0';
 
+	/* Request to break out of 'display_run' in the main process */
+	assert(stop_display(c, 1) >= 0);
+
 	/* On Linux, the Unix socket default buffer size is <=256KB, and
 	 * each noop request requires 8 bytes; the buffer should thus
 	 * overflow within about 32K /unhandled/ iterations */
@@ -1457,7 +1460,7 @@ TEST(send_overflow_disconnection)
 	struct display *d;
 	char tmp;
 	int rpipe[2];
-	int i;
+	ssize_t ret;
 
 	assert(pipe(rpipe) != -1);
 
@@ -1469,16 +1472,18 @@ TEST(send_overflow_disconnection)
 	 * interrupted if the client dies */
 	close(rpipe[1]);
 
-	/* At least 2 loops of this are needed to respond for the client to
-	 * set up the test interface */
-	for (i = 0; i < 5; i++) {
-		wl_display_flush_clients(d->wl_display);
-		wl_event_loop_dispatch(wl_display_get_event_loop(d->wl_display), -1);
-	}
+	/* Run the display until the client sends a `stop_display`, then
+	 * send a resume message but don't actually look at new messages */
+	display_run(d);
+	display_post_resume_events(d);
+	wl_display_flush_clients(d->wl_display);
 
-	/* Wait until all noop requests have been sent, or until client
-	 * process aborts */
-	(void)read(rpipe[0], &tmp, sizeof(tmp));
+	/* Wait until all noop requests have been sent (read returns 1), or
+	 * until client process aborts (read returns 0) */
+	do {
+		ret = read(rpipe[0], &tmp, sizeof(tmp));
+	} while (ret == -1 && errno == EINTR);
+	assert(ret != -1);
 	close(rpipe[0]);
 
 	/* For a clean shutdown */

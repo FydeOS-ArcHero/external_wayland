@@ -366,7 +366,7 @@ display_run(struct display *d)
 }
 
 void
-display_resume(struct display *d)
+display_post_resume_events(struct display *d)
 {
 	struct wfr *wfr, *next;
 
@@ -380,7 +380,12 @@ display_resume(struct display *d)
 
 	assert(wl_list_empty(&d->waiting_for_resume));
 	d->wfr_num = 0;
+}
 
+void
+display_resume(struct display *d)
+{
+	display_post_resume_events(d);
 	wl_display_run(d->wl_display);
 }
 

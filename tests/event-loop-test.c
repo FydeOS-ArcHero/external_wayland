@@ -346,6 +346,64 @@ TEST(event_loop_timer_updates)
 	wl_event_loop_destroy(loop);
 }
 
+struct timer_order_data {
+	struct wl_event_source *source;
+	int *last_number;
+	int number;
+};
+
+static int
+timer_order_callback(void *data)
+{
+	struct timer_order_data *tod = data;
+
+	/* Check that the timers have the correct sequence */
+	assert(tod->number == *tod->last_number + 2);
+	*tod->last_number = tod->number;
+	return 0;
+}
+
+TEST(event_loop_timer_order)
+{
+	struct wl_event_loop *loop = wl_event_loop_create();
+	struct timer_order_data order[20];
+	int i, j;
+	int last = -1;
+
+	/* Configure a set of timers so that only timers 1, 3, 5, ..., 19
+	 * (in that order) will be dispatched when the event loop is run */
+
+	for (i = 0; i < 20; i++) {
+		order[i].number = i;
+		order[i].last_number = &last;
+		order[i].source =
+			wl_event_loop_add_timer(loop, timer_order_callback,
+						&order[i]);
+		assert(order[i].source);
+		assert(wl_event_source_timer_update(order[i].source, 10) == 0);
+	}
+
+	for (i = 0; i < 20; i++) {
+		/* Permute the order in which timers are updated, so as to
+		 * more exhaustively test the underlying priority queue code */
+		j = ((i + 3) * 17) % 20;
+		assert(wl_event_source_timer_update(order[j].source, j) == 0);
+	}
+	for (i = 0; i < 20; i += 2) {
+		assert(wl_event_source_timer_update(order[i].source, 0) == 0);
+	}
+
+	/* Wait until all timers are due */
+	usleep(MSEC_TO_USEC(21));
+	wl_event_loop_dispatch(loop, 0);
+	assert(last == 19);
+
+	for (i = 0; i < 20; i++) {
+		wl_event_source_remove(order[i].source);
+	}
+	wl_event_loop_destroy(loop);
+}
+
 struct timer_cancel_context {
 	struct wl_event_source *timers[4];
 	struct timer_cancel_context *back_refs[4];

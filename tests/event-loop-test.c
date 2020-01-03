@@ -29,6 +29,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <signal.h>
+#include <string.h>
 #include <sys/time.h>
 
 #include "wayland-private.h"
@@ -327,6 +328,80 @@ TEST(event_loop_timer_updates)
 
 	wl_event_source_remove(context.source1);
 	wl_event_source_remove(context.source2);
+	wl_event_loop_destroy(loop);
+}
+
+struct timer_cancel_context {
+	struct wl_event_source *timers[4];
+	struct timer_cancel_context *back_refs[4];
+	int order[4];
+	int called, first;
+};
+
+static int
+timer_cancel_callback(void *data) {
+	struct timer_cancel_context **context_ref = data;
+	struct timer_cancel_context *context = *context_ref;
+	int i = (int)(context_ref - context->back_refs);
+
+	context->called++;
+	context->order[i] = context->called;
+
+	if (context->called == 1) {
+		context->first = i;
+		/* Removing a timer always prevents its callback from
+		 * being called ... */
+		wl_event_source_remove(context->timers[(i + 1) % 4]);
+		/* ... but disarming or rescheduling a timer does not,
+		 * (in the case where the modified timers had already expired
+		 * as of when `wl_event_loop_dispatch` was called.) */
+		assert(wl_event_source_timer_update(context->timers[(i + 2) % 4],
+						    0) == 0);
+		assert(wl_event_source_timer_update(context->timers[(i + 3) % 4],
+						    2000000000) == 0);
+	}
+
+	return 0;
+}
+
+TEST(event_loop_timer_cancellation)
+{
+	struct wl_event_loop *loop = wl_event_loop_create();
+	struct timer_cancel_context context;
+	int i;
+
+	memset(&context, 0, sizeof(context));
+
+	/* Test that when multiple timers are dispatched in a single call
+	 * of `wl_event_loop_dispatch`, that having some timers run code
+	 * to modify the other timers only actually prevents the other timers
+	 * from running their callbacks when the those timers are removed, not
+	 * when they are disarmed or rescheduled. */
+
+	for (i = 0; i < 4; i++) {
+		context.back_refs[i] = &context;
+		context.timers[i] =
+			wl_event_loop_add_timer(loop, timer_cancel_callback,
+						&context.back_refs[i]);
+		assert(context.timers[i]);
+
+		assert(wl_event_source_timer_update(context.timers[i], 1) == 0);
+	}
+
+	usleep(MSEC_TO_USEC(2));
+	assert(wl_event_loop_dispatch(loop, 0) == 0);
+
+	/* Tracking which timer was first makes this test independent of the
+	 * actual timer dispatch order, which is not guaranteed by the docs */
+	assert(context.order[context.first] == 1);
+	assert(context.order[(context.first + 1) % 4] == 0);
+	assert(context.order[(context.first + 2) % 4] > 1);
+	assert(context.order[(context.first + 3) % 4] > 1);
+
+	wl_event_source_remove(context.timers[context.first]);
+	wl_event_source_remove(context.timers[(context.first + 2) % 4]);
+	wl_event_source_remove(context.timers[(context.first + 3) % 4]);
+
 	wl_event_loop_destroy(loop);
 }
 

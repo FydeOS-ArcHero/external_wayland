@@ -572,7 +572,7 @@
 
 	This request determines the final result of the drag-and-drop
 	operation. If the end result is that no action is accepted,
-	the drag source will receive wl_drag_source.cancelled.
+	the drag source will receive wl_data_source.cancelled.
 
 	The dnd_actions argument must contain only values expressed in the
 	wl_data_device_manager.dnd_actions enum, and the preferred_action

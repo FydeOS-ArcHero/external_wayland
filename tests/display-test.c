@@ -1430,13 +1430,19 @@ send_overflow_client(void *data)
 	int i, err = 0;
 	int *pipes = data;
 	char tmp = '\0';
+	int sock, optval = 16384;
+
+	/* Limit the send buffer size for the display socket to guarantee
+	 * that the test will cause an overflow. */
+	sock = wl_display_get_fd(c->wl_display);
+	assert(setsockopt(sock, SOL_SOCKET, SO_SNDBUF, &optval, sizeof(optval)) == 0);
 
 	/* Request to break out of 'display_run' in the main process */
 	assert(stop_display(c, 1) >= 0);
 
-	/* On Linux, the Unix socket default buffer size is <=256KB, and
-	 * each noop request requires 8 bytes; the buffer should thus
-	 * overflow within about 32K /unhandled/ iterations */
+	/* On Linux, the actual socket data + metadata space is twice `optval`;
+	 * since each noop request requires 8 bytes, the buffer should overflow
+	 * within <=4096 iterations. */
 	for (i = 0; i < 1000000; i++) {
 		noop_request(c);
 		err = wl_display_get_error(c->wl_display);

@@ -30,21 +30,21 @@ tests_protocol_xml = files('../protocol/tests.xml')
 
 tests_server_protocol_h = custom_target(
 	'test server protocol header',
-	command: [ wayland_scanner_for_build, 'server-header', '@INPUT@', '@OUTPUT@' ],
+	command: [ wayland_scanner_for_build, '-s', 'server-header', '@INPUT@', '@OUTPUT@' ],
 	input: tests_protocol_xml,
 	output: 'tests-server-protocol.h'
 )
 
 tests_client_protocol_c = custom_target(
 	'test client protocol header',
-	command: [ wayland_scanner_for_build, 'client-header', '@INPUT@', '@OUTPUT@' ],
+	command: [ wayland_scanner_for_build, '-s', 'client-header', '@INPUT@', '@OUTPUT@' ],
 	input: tests_protocol_xml,
 	output: 'tests-client-protocol.h'
 )
 
 tests_protocol_c = custom_target(
 	'test protocol source',
-	command: [ wayland_scanner_for_build, 'public-code', '@INPUT@', '@OUTPUT@' ],
+	command: [ wayland_scanner_for_build, '-s', 'public-code', '@INPUT@', '@OUTPUT@' ],
 	input: tests_protocol_xml,
 	output: 'tests-protocol.c'
 )

@@ -112,7 +112,7 @@ if get_option('libraries')
 		target = custom_target(
 			target_name,
 			command: [
-				wayland_scanner_for_build, scanner_args,
+				wayland_scanner_for_build, '-s', scanner_args,
 				'@INPUT@', '@OUTPUT@'
 			],
 			input: wayland_protocol_xml,
@@ -127,7 +127,7 @@ if get_option('libraries')
 	wayland_protocol_c = custom_target(
 		'protocol source',
 		command: [
-			wayland_scanner_for_build, 'public-code', '@INPUT@', '@OUTPUT@'
+			wayland_scanner_for_build, '-s', 'public-code', '@INPUT@', '@OUTPUT@'
 		],
 		input: wayland_protocol_xml,
 		output: 'wayland-protocol.c'

@@ -98,22 +98,22 @@ pkgconfig_DATA += src/wayland-client.pc src/wayland-server.pc
 
 protocol/%-protocol.c : $(top_srcdir)/protocol/%.xml
 if USE_HOST_SCANNER
-	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) code $< $@
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) -s code $< $@
 else
-	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) public-code $< $@
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) -s public-code $< $@
 endif
 
 protocol/%-server-protocol.h : $(top_srcdir)/protocol/%.xml
-	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) server-header $< $@
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) -s server-header $< $@
 
 protocol/%-client-protocol.h : $(top_srcdir)/protocol/%.xml
-	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) client-header $< $@
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) -s client-header $< $@
 
 protocol/%-server-protocol-core.h : $(top_srcdir)/protocol/%.xml
-	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) server-header -c < $< > $@
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) -s server-header -c < $< > $@
 
 protocol/%-client-protocol-core.h : $(top_srcdir)/protocol/%.xml
-	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) client-header -c < $< > $@
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@) && $(wayland_scanner) -s client-header -c < $< > $@
 
 BUILT_SOURCES =					\
 	$(nodist_libwayland_server_la_SOURCES)	\

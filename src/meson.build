@@ -55,7 +55,7 @@ pkgconfig.generate(
 )
 
 if meson.is_cross_build()
-	scanner_dep = dependency('wayland-scanner', native: true, version: '>=1.14.0')
+	scanner_dep = dependency('wayland-scanner', native: true)
 	wayland_scanner_for_build = find_program(scanner_dep.get_pkgconfig_variable('wayland_scanner'))
 else
 	wayland_scanner_for_build = wayland_scanner

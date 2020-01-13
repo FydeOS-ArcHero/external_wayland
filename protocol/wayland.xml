@@ -593,8 +593,10 @@
 	This request can only be made on drag-and-drop offers, a protocol error
 	will be raised otherwise.
       </description>
-      <arg name="dnd_actions" type="uint" summary="actions supported by the destination client"/>
-      <arg name="preferred_action" type="uint" summary="action preferred by the destination client"/>
+      <arg name="dnd_actions" type="uint" summary="actions supported by the destination client"
+           enum="wl_data_device_manager.dnd_action"/>
+      <arg name="preferred_action" type="uint" summary="action preferred by the destination client"
+           enum="wl_data_device_manager.dnd_action"/>
     </request>
 
     <event name="source_actions" since="3">
@@ -603,7 +605,8 @@
 	will be sent right after wl_data_device.enter, or anytime the source
 	side changes its offered actions through wl_data_source.set_actions.
       </description>
-      <arg name="source_actions" type="uint" summary="actions offered by the data source"/>
+      <arg name="source_actions" type="uint" summary="actions offered by the data source"
+           enum="wl_data_device_manager.dnd_action"/>
     </event>
 
     <event name="action" since="3">
@@ -644,7 +647,8 @@
 	final wl_data_offer.set_actions and wl_data_offer.accept requests
 	must happen before the call to wl_data_offer.finish.
       </description>
-      <arg name="dnd_action" type="uint" summary="action selected by the compositor"/>
+      <arg name="dnd_action" type="uint" summary="action selected by the compositor"
+           enum="wl_data_device_manager.dnd_action"/>
     </event>
   </interface>
 
@@ -741,7 +745,8 @@
 	wl_data_device.start_drag. Attempting to use the source other than
 	for drag-and-drop will raise a protocol error.
       </description>
-      <arg name="dnd_actions" type="uint" summary="actions supported by the data source"/>
+      <arg name="dnd_actions" type="uint" summary="actions supported by the data source"
+           enum="wl_data_device_manager.dnd_action"/>
     </request>
 
     <event name="dnd_drop_performed" since="3">
@@ -797,7 +802,8 @@
 	Clients can trigger cursor surface changes from this point, so
 	they reflect the current action.
       </description>
-      <arg name="dnd_action" type="uint" summary="action selected by the compositor"/>
+      <arg name="dnd_action" type="uint" summary="action selected by the compositor"
+           enum="wl_data_device_manager.dnd_action"/>
     </event>
   </interface>
 

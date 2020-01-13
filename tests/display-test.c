@@ -1455,7 +1455,6 @@ send_overflow_client(void *data)
 TEST(send_overflow_disconnection)
 {
 	struct display *d;
-	struct client_info *c;
 	char tmp;
 	int rpipe[2];
 	int i;
@@ -1464,7 +1463,7 @@ TEST(send_overflow_disconnection)
 
 	d = display_create();
 
-	c = client_create(d, send_overflow_client, &rpipe);
+	(void) client_create(d, send_overflow_client, &rpipe);
 
 	/* Close write end of the pipe, so that the later read() call gets
 	 * interrupted if the client dies */
@@ -1578,7 +1577,6 @@ global_remove_after_client(void *data)
 	struct client *c = client_connect();
 	struct wl_registry *registry;
 	uint32_t global_id = 0;
-	struct wl_seat *seat;
 	int ret;
 
 	registry = wl_display_get_registry(c->wl_display);
@@ -1598,7 +1596,6 @@ TEST(global_remove)
 {
 	struct display *d;
 	struct wl_global *global;
-	int i;
 
 	d = display_create();
 

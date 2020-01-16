@@ -230,18 +230,33 @@ timer_callback(void *data)
 TEST(event_loop_timer)
 {
 	struct wl_event_loop *loop = wl_event_loop_create();
-	struct wl_event_source *source;
+	struct wl_event_source *source1, *source2;
 	int got_it = 0;
 
-	source = wl_event_loop_add_timer(loop, timer_callback, &got_it);
-	assert(source);
-	wl_event_source_timer_update(source, 10);
-	wl_event_loop_dispatch(loop, 0);
-	assert(!got_it);
-	wl_event_loop_dispatch(loop, 20);
-	assert(got_it == 1);
+	source1 = wl_event_loop_add_timer(loop, timer_callback, &got_it);
+	assert(source1);
+	wl_event_source_timer_update(source1, 20);
 
-	wl_event_source_remove(source);
+	source2 = wl_event_loop_add_timer(loop, timer_callback, &got_it);
+	assert(source2);
+	wl_event_source_timer_update(source2, 100);
+
+	/* Check that the timer marked for 20 msec from now fires within 30
+	 * msec, and that the timer marked for 100 msec is expected to fire
+	 * within an additional 90 msec. (Some extra wait time is provided to
+	 * account for reasonable code execution / thread preemption delays.) */
+
+	wl_event_loop_dispatch(loop, 0);
+	assert(got_it == 0);
+	wl_event_loop_dispatch(loop, 30);
+	assert(got_it == 1);
+	wl_event_loop_dispatch(loop, 0);
+	assert(got_it == 1);
+	wl_event_loop_dispatch(loop, 90);
+	assert(got_it == 2);
+
+	wl_event_source_remove(source1);
+	wl_event_source_remove(source2);
 	wl_event_loop_destroy(loop);
 }
 

@@ -70,8 +70,6 @@ configure_file(
 	configuration: config_h,
 )
 
-add_project_arguments([ '-DHAVE_CONFIG_H' ], language: 'c')
-
 pkgconfig = import('pkgconfig')
 
 wayland_protocol_xml = files('protocol/wayland.xml')

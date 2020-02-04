@@ -316,7 +316,23 @@ EXTRA_DIST += tests/scanner-test.sh			\
 	tests/data/small-code-core.c			\
 	tests/data/small-client-core.h			\
 	tests/data/small-server-core.h			\
-	tests/data/small-private-code.c
+	tests/data/small-private-code.c			\
+	meson.build					\
+	meson_options.txt				\
+	cursor/meson.build				\
+	doc/meson.build					\
+	doc/doxygen/mainpage.dox			\
+	doc/doxygen/meson.build				\
+	doc/doxygen/gen-doxygen.py			\
+	doc/doxygen/xml/meson.build			\
+	doc/doxygen/xml/Client/meson.build		\
+	doc/doxygen/xml/Server/meson.build		\
+	doc/man/meson.build				\
+	doc/publican/meson.build			\
+	doc/publican/sources/meson.build		\
+	egl/meson.build					\
+	src/meson.build					\
+	tests/meson.build
 
 tests/scanner-test.sh: $(top_builddir)/wayland-scanner
 
